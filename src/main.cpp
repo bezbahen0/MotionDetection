@@ -18,8 +18,7 @@ cv::String keys =
         "{ bg_subs_scale_percent    | 0.2  |                             }"
         "{ brightness_discard_level | 20   |                             }"
         "{ pixel_compression_ratio  | 0.1  |                             }"
-        "{ expansion_step           | 5    |                             }"
-        ;
+        "{ expansion_step           | 5    |                             }" ;
 
 int main(int argc, char* argv[])
 {
@@ -61,11 +60,17 @@ int main(int argc, char* argv[])
             parser.get<std::size_t>("move_buffer_size"));
 
     cv::Mat frame;
+    std::vector<cv::Rect2d> boxes;
     while(true)
     {
         cap >> frame;
         
-        detector.detect(frame);
+        boxes = detector.detect(frame);
+        for(int i = 0; i != boxes.size(); ++i)
+        {
+            cv::rectangle(frame, boxes[i], cv::Scalar(0, 0, 255));
+        }
+        
         if((char)cv::waitKey(1) == 'q')
         {
             break;

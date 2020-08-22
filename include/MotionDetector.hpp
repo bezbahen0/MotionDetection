@@ -3,6 +3,7 @@
 
 #include <boost/circular_buffer.hpp>
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 
 class MotionDetector
 {
@@ -13,17 +14,20 @@ public:
                     float pixelCompressionRatio, 
                     int expansionStep, 
                     std::size_t bgBufferSize, 
-                    std::size_t movementBufferSize);
+                    std::size_t movementBufferSize,
+                    bool groupBoxes = true);
 
-    void detect(cv::Mat& frame);
+
+    std::vector<cv::Rect2d>& detect(cv::Mat& frame);
     cv::Mat prepare(cv::Mat& f, int width, int height);
 
 private:
     void updateBackgraund(cv::Mat& frame_fp32);
     cv::Mat detectMovement(cv::Mat& frame_fp32);
-    void getMovementZones();
+    std::vector<cv::Rect2d>& getMovementZones(cv::Mat& frame);
 
     int count_;
+    bool groupBoxes_;
     int backgroundSkipFrames_;
     float backgroundSubsScalePercent_;
     int brightnessDiscardLevel_;
@@ -38,7 +42,9 @@ private:
     cv::Mat backgroundFrame_;
     cv::Mat detection_;
     cv::Mat backgroundAcc_;
+    cv::Mat detectionBoxes_;
 
+    std::vector<cv::Rect2d> boxes_;
     boost::circular_buffer<cv::Mat> bgFrames_;
     boost::circular_buffer<cv::Mat> movementFrames_;
     boost::circular_buffer<cv::Mat> origFrames_;

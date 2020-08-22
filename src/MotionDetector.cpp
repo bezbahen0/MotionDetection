@@ -1,15 +1,30 @@
 #include "include/MotionDetector.hpp"
 
-#include <opencv2/imgproc.hpp>
+cv::Rect2d resizeBox(cv::Rect2d box, float scale)
+{
 
+}
+
+cv::Mat genMovementFrame(boost::circular_buffer<cv::Mat>& frames, cv::Size size)
+{
+    cv::Mat acc = cv::Mat::zeros(size, CV_32F);
+    int i = 0;
+    for(; i != frames.size(); ++i)
+    {
+        acc += frames[i] * i;
+    }
+    acc = acc / ((1 + i) / 2 *i);
+    //acc[acc > 254] = 255;
+    return acc;
+}
 MotionDetector::MotionDetector(int backgroundSkipFrames,
                                 float backgroundSubsScalePercent,
                                 int brightnessDiscardLevel,
                                 float pixelCompressionRatio,
                                 int expansionStep,
                                 std::size_t bgBufferSize,
-                                std::size_t movementBufferSize)
-{
+                                std::size_t movementBufferSize,
+                                bool groupBoxes) {
     backgroundSkipFrames_ = backgroundSkipFrames;
     backgroundSubsScalePercent_ = backgroundSubsScalePercent;
     brightnessDiscardLevel_ = brightnessDiscardLevel;
@@ -19,14 +34,15 @@ MotionDetector::MotionDetector(int backgroundSkipFrames,
     movementBufferSize_ = movementBufferSize;
 
     count_ = 0;
+    groupBoxes_ = groupBoxes;
     bgFrames_ = boost::circular_buffer<cv::Mat>(bgBufferSize_);
     movementFrames_ = boost::circular_buffer<cv::Mat>(movementBufferSize_);
     origFrames_ = boost::circular_buffer<cv::Mat>(movementBufferSize_);
 }
 
-void MotionDetector::detect(cv::Mat& frame)
+std::vector<cv::Rect2d>& MotionDetector::detect(cv::Mat& frame)
 {
-    origFrames_.push_back(frame);
+    origFrames_.push_back(frame.clone());
 
     int width = int(frame.size().width * backgroundSubsScalePercent_);
     int height = int(frame.size().height * backgroundSubsScalePercent_);
@@ -42,7 +58,7 @@ void MotionDetector::detect(cv::Mat& frame)
     movement_ = detectMovement(frame_fp32);
     cv::resize(movement_, detection_, cv::Size(detectWidth, detectHeight), 0, 0, cv::INTER_CUBIC);
     
-    //boxes = getMovementZones(detection_);
+    boxes_ = getMovementZones(detection_);
     count_++;
     //return boxes, origFrames_[0]   
 }
@@ -83,7 +99,7 @@ void MotionDetector::updateBackgraund(cv::Mat& frame_fp32)
 cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
 {
     movementFrames_.push_back(frame_fp32);
-    cv::Mat moveFrame;
+    cv::Mat moveFrame = genMovementFrame(movementFrames_, frame_fp32.size());
     backgroundFrame_ = backgroundAcc_ / bgFrames_.size();
     if(!bgFrames_.empty())
         cv::absdiff(moveFrame, backgroundFrame_, movement_);
@@ -99,6 +115,30 @@ cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
     return movement_;
 }
 
-void MotionDetector::getMovementZones()
+std::vector<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)
 {
+    boxes_ = std::vector<cv::Rect2d>();
+    if(bgFrames_.size() >= bgBufferSize_ / 2)
+    {
+        //boxes = scan(frame, expansionStep_);
+        if(groupBoxes_)
+        {
+            //boxes_ = optimizeBoundingBoxes(boxes_);
+        }
+    }
+
+    detectionBoxes_ = detection_.clone();
+    for(unsigned i = 0; i != boxes_.size(); ++i)
+    {
+        cv::rectangle(detectionBoxes_, boxes_[i], cv::Scalar(0, 0, 250));
+    }
+
+    std::vector<cv::Rect2d> origBoxes;
+    for(unsigned i = 0; i != boxes_.size(); ++i)
+    {
+        origBoxes.push_back(resizeBox(boxes_[i], pixelCompressionRatio_));
+    }
+
+    boxes_ = origBoxes;
+    return boxes_;
 } 

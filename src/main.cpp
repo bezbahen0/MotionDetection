@@ -1,5 +1,6 @@
 #include <opencv2/core/utility.hpp>
 #include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
 
 #include "include/MotionDetector.hpp"
 
@@ -24,29 +25,52 @@ int main(int argc, char* argv[])
 {
     cv::CommandLineParser parser(argc, argv, keys);
     
-    cv::VideoCaputure cap;
+    cv::VideoCapture cap;
 
     if(argc == 1)
     {
         cap.open(0);
     }
-    if(parser.has("help") || argc == 1)
+    if(parser.has("help"))
     {
         parser.printMessage();
         return EXIT_SUCCESS;
     }
     if(parser.has("video"))
     {
-        cap.open(parser.get<cv::String>("video");
+        cap.open(parser.get<cv::String>("video"));
     }
     else if(parser.has("camera"))
     {
-        cap.open(parser.get<int>("camera"))
+        cap.open(parser.get<int>("camera"));
     }
 
     cap.set(cv::CAP_PROP_FRAME_WIDTH, parser.get<int>("width"));
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, parser.get<int>("height"));
 
+    int b_height = parser.get<int>("b_height");
+    int b_width = parser.get<int>("b_width");
+
+    MotionDetector detector(
+            parser.get<int>("bg_skip_frames"),
+            parser.get<float>("bg_subs_scale_percent"),
+            parser.get<int>("brightness_discard_level"),
+            parser.get<float>("pixel_compression_ratio"),
+            parser.get<int>("expansion_step"),
+            parser.get<std::size_t>("bg_buffer_size"),
+            parser.get<std::size_t>("move_buffer_size"));
+
+    cv::Mat frame;
+    while(true)
+    {
+        cap >> frame;
+        
+        detector.detect(frame);
+        if((char)cv::waitKey(1) == 'q')
+        {
+            break;
+        }
+    }
 
     return EXIT_SUCCESS;
 }

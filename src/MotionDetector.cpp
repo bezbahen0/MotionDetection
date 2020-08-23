@@ -1,8 +1,14 @@
 #include "include/MotionDetector.hpp"
+#include "include/scanner.hpp"
 
 cv::Rect2d resizeBox(cv::Rect2d box, float scale)
 {
-
+    cv::Rect2d resbox;
+    resbox.x = box.x / scale;
+    resbox.y = box.y / scale;
+    resbox.width = box.width / scale;
+    resbox.height = box.height / scale;
+    return resbox;
 }
 
 cv::Mat genMovementFrame(boost::circular_buffer<cv::Mat>& frames, cv::Size size)

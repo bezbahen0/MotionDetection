@@ -1,6 +1,6 @@
 #include "include/MotionDetector.hpp"
 #include "include/scanner.hpp"
-#include  <iostream>
+
 cv::Rect2d resizeBox(cv::Rect2d box, float scale)
 {
     cv::Rect2d resbox;
@@ -17,8 +17,7 @@ cv::Mat genMovementFrame(boost::circular_buffer<cv::Mat>& frames, cv::Size size)
     int i = 0;
     for(; i != frames.size(); ++i)
     {
-        frames[i] *= i;
-        acc = acc + frames[i];
+        acc = acc + frames[i] * i;
     }
     acc = acc / ((1 + i) / 2 *i);
     //acc[acc > 254] = 255;
@@ -58,6 +57,7 @@ std::vector<cv::Rect2d>& MotionDetector::detect(cv::Mat& frame)
     int detectHeight = int(frame.size().height * pixelCompressionRatio_);
 
     frame_ = prepare(frame, width, height);
+
     cv::Mat frame_fp32;
     frame_.convertTo(frame_fp32, CV_32FC3);
     updateBackgraund(frame_fp32);
@@ -67,6 +67,7 @@ std::vector<cv::Rect2d>& MotionDetector::detect(cv::Mat& frame)
     
     boxes_ = getMovementZones(detection_);
     count_++;
+    
     return boxes_;   
 }
 cv::Mat MotionDetector::prepare(cv::Mat& f, int width, int height)
@@ -80,6 +81,11 @@ cv::Mat MotionDetector::prepare(cv::Mat& f, int width, int height)
 cv::Mat MotionDetector::detectionBoxes() const
 {
     return detectionBoxes_.clone();
+}
+
+cv::Mat MotionDetector::colorMovement() const
+{
+    return colorMovement_.clone();
 }
 
 void MotionDetector::updateBackgraund(cv::Mat& frame_fp32)
@@ -110,9 +116,10 @@ void MotionDetector::updateBackgraund(cv::Mat& frame_fp32)
 
 cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
 {
-    movementFrames_.push_back(frame_fp32);
+    movementFrames_.push_back(frame_fp32.clone());
     cv::Mat moveFrame = genMovementFrame(movementFrames_, frame_fp32.size());
     backgroundFrame_ = backgroundAcc_ / bgFrames_.size();
+    // self.background_frame[self.background+fram > 254] = 0
     if(!bgFrames_.empty())
         cv::absdiff(moveFrame, backgroundFrame_, movement_);
     else
@@ -120,7 +127,7 @@ cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
     colorMovement_ = movement_.clone();
     //movement_[movement_ < brightnessDiscardLevel_] = 0;
     //movement_[movement_ > 0] = 254;
-    //movement_.convertTo(movement_, CV_8UC3);
+    movement_.convertTo(movement_, CV_8UC3);
     cv::cvtColor(movement_, movement_, cv::COLOR_BGR2GRAY);
     //movement_[movement_ > 0] = 254;
    

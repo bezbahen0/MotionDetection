@@ -77,6 +77,7 @@ int main(int argc, char* argv[])
         }
         cv::imshow("frame", frame);
         cv::imshow("detect_boxes", detector.detectionBoxes());
+        cv::imshow("color_movement", detector.colorMovement());
     }
 
     return EXIT_SUCCESS;

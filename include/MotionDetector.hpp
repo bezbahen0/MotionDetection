@@ -21,6 +21,7 @@ public:
     std::vector<cv::Rect2d>& detect(cv::Mat& frame);
     cv::Mat prepare(cv::Mat& f, int width, int height);
     cv::Mat detectionBoxes() const;
+    cv::Mat colorMovement() const;
 
 private:
     void updateBackgraund(cv::Mat& frame_fp32);

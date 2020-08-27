@@ -69,12 +69,14 @@ int main(int argc, char* argv[])
         for(int i = 0; i != boxes.size(); ++i)
         {
             cv::rectangle(frame, boxes[i], cv::Scalar(0, 0, 255));
-        }
+        }  
         
         if((char)cv::waitKey(1) == 'q')
         {
             break;
         }
+        cv::imshow("frame", frame);
+        cv::imshow("detect_boxes", detector.detectionBoxes());
     }
 
     return EXIT_SUCCESS;

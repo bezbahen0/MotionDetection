@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.6.0)
 
-project(MovementDetector LANGUAGES C CXX)
+project(MovementDetector LANGUAGES CXX)
 
 find_package( OpenCV REQUIRED )
 

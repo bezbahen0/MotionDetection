@@ -15,17 +15,17 @@ cv::Rect2d resizeBox(cv::Rect2d box, float scale)
 cv::Mat genMovementFrame(boost::circular_buffer<cv::Mat>& frames, cv::Size size)
 {
     cv::Mat acc = cv::Mat::zeros(size, CV_32FC3);
-    int i = 0;
+    double i = 0.0;
     for(auto f = frames.begin(); f != frames.end(); f++)
     {
         i++;
         acc += (*f) * i;
     }
-    acc = acc / ((1 + i) / 2 * i);
+    acc = acc / ((1.0 + i) / 2.0 * i);
 
     cv::Mat mask = acc > 254;
-    acc.setTo(cv::Scalar(255), mask);
-
+    acc.setTo(255, mask);
+    
     return acc.clone();
 }
 
@@ -97,11 +97,6 @@ void MotionDetector::updateBackgraund(cv::Mat& frame_fp32)
         return;
 
     cv::Mat currentFrame = frame_fp32.clone();
-    /*if(movementFrames_.size() == movementBufferSize_)
-        currentFrame = movementFrames_.front();
-    else
-        currentFrame = frame_fp32.clone();
-    */
     if(backgroundAcc_.empty())
         backgroundAcc_ = frame_fp32.clone();
     else
@@ -123,24 +118,24 @@ cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
     backgroundFrame_ = backgroundAcc_ / bgFrames_.size();
 
     cv::Mat mask = backgroundFrame_ > 254;
-    backgroundFrame_.setTo(cv::Scalar(255), mask);
+    backgroundFrame_.setTo(255, mask);
 
+    cv::Mat movement;
     if(!bgFrames_.empty())
-        cv::absdiff(moveFrame, backgroundFrame_, movement_);
+        cv::absdiff(moveFrame, backgroundFrame_, movement);
     else
-        movement_ = cv::Mat::zeros(moveFrame.size(), CV_32FC3);
-    colorMovement_ = movement_.clone();
+        movement = cv::Mat::zeros(moveFrame.size(), CV_32FC3);
+    colorMovement_ = movement;
 
-    mask = movement_ < brightnessDiscardLevel_;
-    movement_.setTo(cv::Scalar(0), mask);
-    mask = movement_ > 0;
-    movement_.setTo(cv::Scalar(254), mask);
-//movement_.convertTo(movement_, CV_8U);
-    cv::cvtColor(movement_, movement_, cv::COLOR_BGR2GRAY);
-    mask = movement_ > 0;
-    movement_.setTo(cv::Scalar(254), mask);
-   
-    return movement_;
+    mask = movement < brightnessDiscardLevel_;
+    movement.setTo(0, mask);
+    mask = movement > 0;
+    movement.setTo(254, mask);
+
+    movement_.convertTo(movement_, CV_8U);
+    cv::cvtColor(movement, movement, cv::COLOR_BGR2GRAY);
+
+    return movement;
 }
 
 std::vector<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)

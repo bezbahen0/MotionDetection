@@ -49,7 +49,6 @@ private:
     std::vector<cv::Rect2d> boxes_;
     boost::circular_buffer<cv::Mat> bgFrames_;
     boost::circular_buffer<cv::Mat> movementFrames_;
-    boost::circular_buffer<cv::Mat> origFrames_;
 };
 
 #endif /* MOTIONDETECTOR_HPP */

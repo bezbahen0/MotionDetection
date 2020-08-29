@@ -10,8 +10,7 @@ cv::Rect2d resizeBox(cv::Rect2d box, float scale)
     resbox.width = box.width / scale;
     resbox.height = box.height / scale;
     return resbox;
-}
-
+} 
 cv::Mat genMovementFrame(boost::circular_buffer<cv::Mat>& frames, cv::Size size)
 {
     cv::Mat acc = cv::Mat::zeros(size, CV_32FC3);
@@ -141,16 +140,16 @@ cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
 std::vector<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)
 {
     boxes_ = std::vector<cv::Rect2d>();
-    /*if(bgFrames_.size() >= bgBufferSize_ / 2)
+    if(bgFrames_.size() >= bgBufferSize_ / 2)
     {
-        boxes = scan(frame, expansionStep_);
-        if(groupBoxes_)
+        boxes_ = scan(frame, expansionStep_);
+        /*if(groupBoxes_)
         {
             boxes_ = optimizeBoundingBoxes(boxes_);
-        }
-    }*/
+        }*/
+    }
 
-    detectionBoxes_ = detection_.clone();/*
+    detectionBoxes_ = detection_.clone();
     for(unsigned i = 0; i != boxes_.size(); ++i)
     {
         cv::rectangle(detectionBoxes_, boxes_[i], cv::Scalar(0, 0, 250));
@@ -162,6 +161,6 @@ std::vector<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)
         origBoxes.push_back(resizeBox(boxes_[i], pixelCompressionRatio_));
     }
 
-    boxes_ = origBoxes;*/
+    boxes_ = origBoxes;
     return boxes_;
 } 

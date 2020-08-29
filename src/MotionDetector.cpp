@@ -50,7 +50,7 @@ MotionDetector::MotionDetector(int backgroundSkipFrames,
     movementFrames_ = boost::circular_buffer<cv::Mat>(movementBufferSize_);
 }
 
-std::vector<cv::Rect2d>& MotionDetector::detect(cv::Mat& frame)
+std::list<cv::Rect2d>& MotionDetector::detect(cv::Mat& frame)
 {
     int width = int(frame.size().width * backgroundSubsScalePercent_);
     int height = int(frame.size().height * backgroundSubsScalePercent_);
@@ -137,9 +137,9 @@ cv::Mat MotionDetector::detectMovement(cv::Mat& frame_fp32)
     return movement;
 }
 
-std::vector<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)
+std::list<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)
 {
-    boxes_ = std::vector<cv::Rect2d>();
+    boxes_ = std::list<cv::Rect2d>();
     if(bgFrames_.size() >= bgBufferSize_ / 2)
     {
         boxes_ = scan(frame, expansionStep_);
@@ -150,15 +150,15 @@ std::vector<cv::Rect2d>& MotionDetector::getMovementZones(cv::Mat& frame)
     }
 
     detectionBoxes_ = detection_.clone();
-    for(unsigned i = 0; i != boxes_.size(); ++i)
+    for(auto i = boxes_.begin(); i != boxes_.end(); ++i)
     {
-        cv::rectangle(detectionBoxes_, boxes_[i], cv::Scalar(0, 0, 250));
+        cv::rectangle(detectionBoxes_, *i, cv::Scalar(0, 0, 250));
     }
 
-    std::vector<cv::Rect2d> origBoxes;
-    for(unsigned i = 0; i != boxes_.size(); ++i)
+    std::list<cv::Rect2d> origBoxes;
+    for(auto i = boxes_.begin(); i != boxes_.end(); ++i)
     {
-        origBoxes.push_back(resizeBox(boxes_[i], pixelCompressionRatio_));
+        origBoxes.push_back(resizeBox(*i, pixelCompressionRatio_));
     }
 
     boxes_ = origBoxes;

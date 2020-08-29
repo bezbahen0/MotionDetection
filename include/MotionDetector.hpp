@@ -2,8 +2,11 @@
 #define MOTIONDETECTOR_HPP
 
 #include <boost/circular_buffer.hpp>
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+
+#include <list>
 
 class MotionDetector
 {
@@ -18,7 +21,7 @@ public:
                     bool groupBoxes = true);
 
 
-    std::vector<cv::Rect2d>& detect(cv::Mat& frame);
+    std::list<cv::Rect2d>& detect(cv::Mat& frame);
     cv::Mat prepare(cv::Mat& f, int width, int height);
     cv::Mat detectionBoxes() const;
     cv::Mat colorMovement() const;
@@ -26,7 +29,7 @@ public:
 private:
     void updateBackgraund(cv::Mat& frame_fp32);
     cv::Mat detectMovement(cv::Mat& frame_fp32);
-    std::vector<cv::Rect2d>& getMovementZones(cv::Mat& frame);
+    std::list<cv::Rect2d>& getMovementZones(cv::Mat& frame);
 
     int count_;
     bool groupBoxes_;
@@ -46,7 +49,7 @@ private:
     cv::Mat backgroundAcc_;
     cv::Mat detectionBoxes_;
 
-    std::vector<cv::Rect2d> boxes_;
+    std::list<cv::Rect2d> boxes_;
     boost::circular_buffer<cv::Mat> bgFrames_;
     boost::circular_buffer<cv::Mat> movementFrames_;
 };

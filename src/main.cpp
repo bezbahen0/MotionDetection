@@ -2,7 +2,6 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <time.h>
 #include <iostream>
 
 #include "include/MotionDetector.hpp"
@@ -10,12 +9,10 @@
 cv::String keys =
         "{ help h                   |      | print this message          }"
         "{ video v                  |      | video capturing             }"
-        "{ camera c                 |      | camera capturing            }"
-        "{ b_height                 | 320  | height of compression frame }"
-        "{ b_width                  | 320  | width of compression frame  }"
+        "{ camera c                 | 0    | camera capturing            }"
         "{ height                   | 1980 | height of frame             }"
         "{ width                    | 1080 | width of frame              }"
-        "{ bg_buffer_size           | 5    | backgraund buffer size      }"
+        "{ bg_buffer_size           | 10   | backgraund buffer size      }"
         "{ move_buffer_size         | 2    | movement buffer size        }"
         "{ bg_skip_frames           | 1    | skip frames for processing  }"
         "{ bg_subs_scale_percent    | 0.2  |                             }"
@@ -50,9 +47,6 @@ int main(int argc, char* argv[])
     cap.set(cv::CAP_PROP_FRAME_WIDTH, parser.get<int>("width"));
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, parser.get<int>("height"));
 
-    int b_height = parser.get<int>("b_height");
-    int b_width = parser.get<int>("b_width");
-
     MotionDetector detector(
             parser.get<int>("bg_skip_frames"),
             parser.get<float>("bg_subs_scale_percent"),
@@ -66,7 +60,7 @@ int main(int argc, char* argv[])
     std::list<cv::Rect2d> boxes;
     while(true)
     {
-        int64 t0 = cv::getTickCount();
+//        int64 t0 = cv::getTickCount();
         cap >> frame;
         
         boxes = detector.detect(frame);
@@ -79,9 +73,9 @@ int main(int argc, char* argv[])
         cv::imshow("detect_boxes", detector.detectionBoxes());
         cv::imshow("color_movement", detector.colorMovement());
 
-        int64 t1 = cv::getTickCount();
-        double secs = (t1-t0)/cv::getTickFrequency();
-        std::cout << "Time taken : " << secs << " seconds" << std::endl;
+//        int64 t1 = cv::getTickCount();
+//        double secs = (t1-t0)/cv::getTickFrequency();
+//        std::cout << "Time taken : " << secs << " seconds" << std::endl;
 
         if((char)cv::waitKey(1) == 'q')
         {

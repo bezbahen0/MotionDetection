@@ -1,7 +1,7 @@
 # Motion Detection
 
 ## Working Example
-
+![Working example](./example.gif)
 ## Project Description 
 
 ## Requirements

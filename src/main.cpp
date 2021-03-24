@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
     if(argc == 1)
     {
-        cap.open(0);
+        cap.open(0, cv::CAP_V4L);
     }
     if(parser.has("help"))
     {
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     }
     else if(parser.has("camera"))
     {
-        cap.open(parser.get<int>("camera"));
+        cap.open(parser.get<int>("camera"), cv::CAP_V4L);
     }
 
     cap.set(cv::CAP_PROP_FRAME_WIDTH, parser.get<int>("width"));
